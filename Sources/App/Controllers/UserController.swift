@@ -38,6 +38,14 @@ final class UserController {
 			return try UserResponse(id: user.requireID(), username: user.username)
 		}
 	}
+
+	func profile(_ req: Request) throws -> UserResponse {
+		// confirms token auth
+		let user = try req.requireAuthenticated(User.self)
+
+		// returns a user response
+		return try UserResponse(id: user.requireID(), username: user.username)
+	}
 }
 
 // MARK: Content

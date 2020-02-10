@@ -10,7 +10,7 @@ final class UserToken: SQLiteModel {
 		// generate a random 128-bit, base64-encoded string.
 		let string = try CryptoRandom().generateData(count: 16).base64EncodedString()
 		// init a new `UserToken` from that string.
-		return .init(string: string, userID: userID)
+		return .init(token: string, userID: userID)
 	}
 	
 	/// See `Model`.
@@ -20,7 +20,7 @@ final class UserToken: SQLiteModel {
 	var id: Int?
 	
 	/// Unique token string.
-	var string: String
+	var token: String
 	
 	/// Reference to user that owns this token.
 	var userID: User.ID
@@ -29,9 +29,9 @@ final class UserToken: SQLiteModel {
 	var expiresAt: Date?
 	
 	/// Creates a new `UserToken`.
-	init(id: Int? = nil, string: String, userID: User.ID) {
+	init(id: Int? = nil, token: String, userID: User.ID) {
 		self.id = id
-		self.string = string
+		self.token = token
 		// set token to expire after 5 hours
 		self.expiresAt = Date.init(timeInterval: 60 * 60 * 5, since: .init())
 		self.userID = userID
@@ -52,7 +52,7 @@ extension UserToken: Token {
 	
 	/// See `Token`.
 	static var tokenKey: WritableKeyPath<UserToken, String> {
-		return \.string
+		return \.token
 	}
 	
 	/// See `Token`.
@@ -67,7 +67,7 @@ extension UserToken: Migration {
 	static func prepare(on conn: SQLiteConnection) -> Future<Void> {
 		return SQLiteDatabase.create(UserToken.self, on: conn) { builder in
 			builder.field(for: \.id, isIdentifier: true)
-			builder.field(for: \.string)
+			builder.field(for: \.token)
 			builder.field(for: \.userID)
 			builder.field(for: \.expiresAt)
 			builder.reference(from: \.userID, to: \User.id)
