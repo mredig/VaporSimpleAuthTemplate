@@ -20,19 +20,22 @@ final class UserController {
     func create(_ req: Request) throws -> Future<UserResponse> {
         // decode request content
         return try req.content.decode(CreateUserRequest.self).flatMap { user -> Future<User> in
-            // verify that passwords match
-            guard user.password == user.verifyPassword else {
+            // verify that passwords match (add strength check later)
+            guard user.password == user.passwordVerify else {
                 throw Abort(.badRequest, reason: "Password and verification must match.")
             }
+			guard user.password.count > 3 else {
+				throw Abort(.badRequest, reason: "Password must contain more characters.")
+			}
             
             // hash user's password using BCrypt
             let hash = try BCrypt.hash(user.password)
             // save new user
-            return User(id: nil, name: user.name, email: user.email, passwordHash: hash)
+			return User(id: nil, username: user.username, passwordHash: hash)
                 .save(on: req)
         }.map { user in
             // map to public user response (omits password hash)
-            return try UserResponse(id: user.requireID(), name: user.name, email: user.email)
+			return try UserResponse(id: user.requireID(), username: user.username)
         }
     }
 }
@@ -41,17 +44,9 @@ final class UserController {
 
 /// Data required to create a user.
 struct CreateUserRequest: Content {
-    /// User's full name.
-    var name: String
-    
-    /// User's email address.
-    var email: String
-    
-    /// User's desired password.
-    var password: String
-    
-    /// User's password repeated to ensure they typed it correctly.
-    var verifyPassword: String
+	let username: String
+    let password: String
+	let passwordVerify: String
 }
 
 /// Public representation of user data.
@@ -59,10 +54,5 @@ struct UserResponse: Content {
     /// User's unique identifier.
     /// Not optional since we only return users that exist in the DB.
     var id: Int
-    
-    /// User's full name.
-    var name: String
-    
-    /// User's email address.
-    var email: String
+    var username: String
 }
