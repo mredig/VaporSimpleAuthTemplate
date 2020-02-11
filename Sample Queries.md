@@ -33,7 +33,7 @@ curl -X POST "http://localhost:8080/register" \
 ```
 {
   "type": "string",
-  "default": "{\"username\":\"zeldaa\",\"password\":\"lonk\",\"passwordVerify\":\"lonk\"}"
+  "default": "{\"username\":\"\",\"password\":\"\",\"passwordVerify\":\"\"}"
 }
 ```
 
@@ -43,14 +43,49 @@ curl -X POST "http://localhost:8080/register" \
 
 ```sh
 curl -X POST "http://localhost:8080/login" \
--u "zeldaa":"lonk"
+    -H "Content-Type: application/json" \
+    --data-raw "$body"
+```
+
+#### Header Parameters
+
+- **Content-Type** should respect the following schema:
+
+```
+{
+  "type": "string",
+  "enum": [
+    "application/json"
+  ],
+  "default": "application/json"
+}
+```
+
+#### Body Parameters
+
+- **body** should respect the following schema:
+
+```
+{
+  "type": "string",
+  "default": "{\"username\":\"\",\"password\":\"\"}"
+}
+```
+
+### **POST** - /login
+
+#### CURL
+
+```sh
+curl -X POST "http://localhost:8080/login" \
+-u "$username":"$password"
 ```
 
 #### Security
 
 - Basic Authentication
-  - **username**: zeldaa
-  - **password**: lonk
+  - **username**: $username
+  - **password**: $password
 
 ### **GET** - /profile
 
@@ -59,7 +94,7 @@ curl -X POST "http://localhost:8080/login" \
 ```sh
 curl -X GET "http://localhost:8080/profile" \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer pVCtG/KmkYKju5TEKNnENA=="
+    -H "Authorization: Bearer S0fJiStzl7LrC6m8rWDq7473EDorBaMedNp3M+uju4U="
 ```
 
 #### Header Parameters
@@ -81,9 +116,9 @@ curl -X GET "http://localhost:8080/profile" \
 {
   "type": "string",
   "enum": [
-    "Bearer pVCtG/KmkYKju5TEKNnENA=="
+    "Bearer S0fJiStzl7LrC6m8rWDq7473EDorBaMedNp3M+uju4U="
   ],
-  "default": "Bearer pVCtG/KmkYKju5TEKNnENA=="
+  "default": "Bearer S0fJiStzl7LrC6m8rWDq7473EDorBaMedNp3M+uju4U="
 }
 ```
 

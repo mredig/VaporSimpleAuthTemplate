@@ -6,32 +6,31 @@ import FluentSQLite
 final class UserController {
 	/// Logs a user in, returning a token for accessing protected endpoints.
 	func login(_ req: Request) throws -> Future<UserToken> {
-		// get user auth'd by basic auth middleware
-		let user = try req.requireAuthenticated(User.self)
+		return try req.content.decode(User.self).flatMap { decodedUser -> Future<UserToken> in
+			User.query(on: req)
+				.filter(\.username == decodedUser.username)
+				.first().flatMap { fetchedUser in
+					guard let existingUser = fetchedUser else {
+						throw Abort(HTTPStatus.notFound)
+					}
+					let hasher = try req.make(BCryptDigest.self)
+					if try hasher.verify(decodedUser.password, created: existingUser.password) {
+						let token = try UserToken.create(userID: existingUser.requireID())
+						return token.save(on: req)
+					} else {
+						throw Abort(HTTPStatus.unauthorized)
+					}
+			}
+		}
 
-		// create new token for this user
-		let token = try UserToken.create(userID: user.requireID())
-
-		// save and return token
-		return token.save(on: req)
-
-		// alternative that would allow for providing a User object via body and not through a basic header:
-//		return try req.content.decode(User.self).flatMap { decodedUser -> Future<UserToken> in
-//			User.query(on: req)
-//				.filter(\.username == decodedUser.username)
-//				.first().flatMap { fetchedUser in
-//					guard let existingUser = fetchedUser else {
-//						throw Abort(HTTPStatus.notFound)
-//					}
-//					let hasher = try req.make(BCryptDigest.self)
-//					if try hasher.verify(decodedUser.passwordHash, created: existingUser.passwordHash) {
-//						let token = try UserToken.create(userID: existingUser.requireID())
-//						return token.save(on: req)
-//					} else {
-//						throw Abort(HTTPStatus.unauthorized)
-//					}
-//			}
-//		}
+		// alternative: get user auth'd by basic auth middleware
+//		let user = try req.requireAuthenticated(User.self)
+//
+//		// create new token for this user
+//		let token = try UserToken.create(userID: user.requireID())
+//
+//		// save and return token
+//		return token.save(on: req)
 	}
 
 	/// Creates a new user.
