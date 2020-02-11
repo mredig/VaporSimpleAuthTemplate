@@ -25,8 +25,7 @@ final class UserController {
 //					}
 //					let hasher = try req.make(BCryptDigest.self)
 //					if try hasher.verify(decodedUser.passwordHash, created: existingUser.passwordHash) {
-//						let tokenString = try CryptoRandom().generateData(count: 32).base64EncodedString()
-//						let token = try UserToken(token: tokenString, userID: existingUser.requireID())
+//						let token = try UserToken.create(userID: existingUser.requireID())
 //						return token.save(on: req)
 //					} else {
 //						throw Abort(HTTPStatus.unauthorized)
