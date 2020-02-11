@@ -14,6 +14,25 @@ final class UserController {
 
 		// save and return token
 		return token.save(on: req)
+
+		// alternative that would allow for providing a User object via body and not through a basic header:
+//		return try req.content.decode(User.self).flatMap { decodedUser -> Future<UserToken> in
+//			User.query(on: req)
+//				.filter(\.username == decodedUser.username)
+//				.first().flatMap { fetchedUser in
+//					guard let existingUser = fetchedUser else {
+//						throw Abort(HTTPStatus.notFound)
+//					}
+//					let hasher = try req.make(BCryptDigest.self)
+//					if try hasher.verify(decodedUser.passwordHash, created: existingUser.passwordHash) {
+//						let tokenString = try CryptoRandom().generateData(count: 32).base64EncodedString()
+//						let token = try UserToken(token: tokenString, userID: existingUser.requireID())
+//						return token.save(on: req)
+//					} else {
+//						throw Abort(HTTPStatus.unauthorized)
+//					}
+//			}
+//		}
 	}
 
 	/// Creates a new user.
